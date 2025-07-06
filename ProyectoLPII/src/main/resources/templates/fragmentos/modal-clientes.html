@@ -1,0 +1,64 @@
+<!-- archivo: templates/fragmentos/modal-clientes.html -->
+
+<div th:fragment="modal-clientes(clientes, idModal)">
+	<div class="modal fade" th:id="${idModal}" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Seleccionar cliente</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+
+				<div class="modal-body">
+					<div class="table-responsive">
+						<table id="tblSelectorClientes" class="table table-hover">
+							<thead class="table-secondary">
+								<tr>
+									<th>ID</th>
+									<th>Nombre</th>
+									<th>Apellido</th>
+									<th>Email</th>
+									<th>Acción</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="cli : ${clientes}">
+									<td th:text="${cli.idCliente}"></td>
+									<td th:text="${cli.nombre}"></td>
+									<td th:text="${cli.apellido}"></td>
+									<td th:text="${cli.email}"></td>
+									<td>
+										<button type="button" class="btn btn-primary btnSeleccionarCliente"
+											th:data-id="${cli.idCliente}"
+											th:data-nombre="${cli.nombre}"
+											th:data-apellido="${cli.apellido}">
+											Seleccionar
+										</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Script de inicialización -->
+	<script>
+		$(document).ready(function () {
+			const idTabla = '#tblSelectorClientes';
+			if ($.fn.DataTable.isDataTable(idTabla)) {
+				$(idTabla).DataTable().destroy();
+			}
+			$('#tblSelectorClientes').DataTable({
+				lengthMenu: [5, 10],
+				pageLength: 5,
+				language: {
+					url: 'https://cdn.datatables.net/plug-ins/2.0.3/i18n/es-ES.json',
+					search: "Filtro general :"
+				}
+			});
+		});
+	</script>
+</div>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Emisión de boleta</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #252c36;
+            color: #ffffff;
+        }
+
+        .form-card, .card {
+            background-color: #2f3742;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            color: #ffffff;
+        }
+
+        .form-control {
+            background-color: #3a4452;
+            border: none;
+            color: #ffffff;
+        }
+
+        .form-control::placeholder {
+            color: #ccc;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border: 1px solid #5c9ded;
+            background-color: #3a4452;
+            color: white;
+        }
+
+        label {
+            margin-top: 10px;
+        }
+
+        .table {
+            background-color: #3a4452;
+            color: #ffffff;
+        }
+
+        .table-dark th {
+            background-color: #1d2125;
+        }
+
+        .btn-cancel {
+            background-color: rgb(128, 0, 0);
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background-color: #660033;
+        }
+
+        .btn-primary, .btn-secondary, .btn-success {
+            border: none;
+        }
+
+        .table-bordered th, .table-bordered td {
+            border-color: #555b63;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #181e26;">
+    <div class="container-fluid">
+        <div class="collapse navbar-collapse d-flex align-items-center" id="navbarNav">
+            <span class="navbar-brand mb-0 h1 d-flex align-items-center me-4">
+                <img src="/img/logo.JPG" alt="Logo" width="200" height="50" class="me-2">
+                Administrador
+            </span>
+            <ul class="navbar-nav d-flex align-items-center">
+                <li class="nav-item"><a class="nav-link active" th:href="@{/productos}">Juegos</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/cliente}">Clientes</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/boletas/filtrado}">Boletas</a></li>
+            </ul>
+        </div>
+        <div class="d-flex align-items-center">
+            <a class="btn btn-danger" th:href="@{/login}">Salir</a>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTENIDO -->
+<div class="container mt-4">
+
+    <form th:action="@{/boletas/registrar}" method="post" th:object="${clienteSeleccionado}">
+        <div class="row mb-3 align-items-center">
+            <div class="col-md-10">
+                <h1 class="m-0">Emisión de boleta</h1>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    Registrar <i class="fa-solid fa-floppy-disk"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <p class="m-0">
+                    <strong>Fecha:</strong>
+                    <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <button class="btn btn-secondary mb-3" type="button" data-bs-toggle="modal" data-bs-target="#modalClientes">
+                    <i class="fa-solid fa-user"></i> Seleccionar cliente
+                </button>
+                <div class="row g-2">
+                    <div class="col-md-2">
+                        <label>ID Cliente</label>
+                        <input type="text" id="idClienteVisible" class="form-control" readonly
+                               th:value="${clienteSeleccionado?.idCliente}">
+                        <input type="hidden" th:field="*{idCliente}" id="idCliente">
+                    </div>
+                    <div class="col-md-6">
+                        <label>Nombre Cliente</label>
+                        <input type="text" class="form-control" id="nombreCliente" readonly
+                               th:value="${clienteSeleccionado?.nombre}">
+                        <input type="hidden" th:field="*{nombre}" id="inputNombreCliente">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#modalProductos">
+                <i class="fa-solid fa-magnifying-glass"></i> Seleccionar producto
+            </button>
+
+            <form th:action="@{/boletas/agregar}" method="post" th:object="${productoSeleccionado}" class="needs-validation" novalidate>
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2">
+                        <label>Código</label>
+                        <input type="text" class="form-control" th:field="*{idProducto}" readonly
+                               th:classappend="${#fields.hasErrors('idProducto')} ? 'is-invalid' : ''">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Nombre</label>
+                        <input type="text" class="form-control" th:field="*{descripcion}" readonly>
+                    </div>
+                    <div class="col-md-2">
+                        <label>Precio</label>
+                        <input type="text" class="form-control" th:field="*{precio}"
+                               th:classappend="${#fields.hasErrors('precio')} ? 'is-invalid' : ''">
+                    </div>
+                    <div class="col-md-2">
+                        <label>Cantidad</label>
+                        <input type="number" class="form-control" th:field="*{cantidad}"
+                               th:classappend="${#fields.hasErrors('cantidad')} ? 'is-invalid' : ''">
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button class="btn btn-success">
+                            <i class="fa-solid fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5>Detalle de productos</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th>Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${seleccionados}">
+                        <td th:text="${item.idProducto}"></td>
+                        <td th:text="${item.descripcion}"></td>
+                        <td th:text="${item.precio}"></td>
+                        <td th:text="${item.cantidad}"></td>
+                        <td th:text="${item.subtotal}"></td>
+                        <td>
+                            <form th:action="@{/boletas/quitar}" method="post">
+                                <input type="hidden" name="codigo" th:value="${item.idProducto}" />
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="fa-solid fa-trash"></i> Quitar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragmentos/modal-productos :: modal-productos(${productos}, 'modalProductos')"></div>
+    <div th:replace="fragmentos/modal-clientes :: modal-clientes(${clientes}, 'modalClientes')"></div>
+    <th:block th:utext="${alert}"></th:block>
+
+</div>
+
+<script>
+    $(document).ready(function () {
+        $(document).on('click', '.btnSeleccionar', function () {
+            let codigo = $(this).data('codigo');
+            let nombre = $(this).data('descripcion');
+            let precio = $(this).data('precio');
+            $('#idProducto').val(codigo);
+            $('#descripcion').val(nombre);
+            $('#precio').val(precio);
+            $('#cantidad').val(1);
+            $('#modalProductos').modal('hide');
+        });
+
+        $(document).on('click', '.btnSeleccionarCliente', function () {
+            let id = $(this).data('id');
+            let nombre = $(this).data('nombre');
+            let apellido = $(this).data('apellido');
+            let nombreCompleto = nombre + ' ' + apellido;
+            $('#idCliente').val(id);
+            $('#idClienteVisible').val(id);
+            $('#nombreCliente').val(nombreCompleto);
+            $('#inputNombreCliente').val(nombreCompleto);
+            $('#modalClientes').modal('hide');
+        });
+    });
+</script>
+
+</body>
+</html>
